@@ -9,6 +9,15 @@ import lombok.*;
 @ToString
 public class MemberDTO {
 
-    private String mid;
-    private String mpw;
+    private String socialId;
+    private String provider;
+    private String email;
+    private String nickname;
+    private String role;
+
+    private Long id;
+
+    public void updateNickname(String nickname) {
+        this.nickname = nickname;
+    }
 }

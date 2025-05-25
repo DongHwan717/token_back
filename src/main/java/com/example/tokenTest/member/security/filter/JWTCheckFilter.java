@@ -26,8 +26,10 @@ public class JWTCheckFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         // 특정 조건에 해당되는 요청에 대해서는 현재 필터를 건너뛰도록(필터링하지 않도록) 지정하는 역할
 
+        String servletPath = request.getServletPath();
+
         ///api/token/은 토큰 없어도 접근 가능하도록 설정
-        if(request.getServletPath().startsWith("/api/token/")) {
+        if(servletPath.startsWith("/api/token/")) {
             return true;
         }
         return false;
@@ -36,31 +38,6 @@ public class JWTCheckFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-        log.info("JWTCheckFilter doFilter...........");
-
-        String headerStr =  request.getHeader("Authorization");
-
-        log.info("headerStr : " + headerStr);
-
-        /**
-         *  Bearer : 표준화된 인증 스키마(Authentication Scheme)를 명시, OAuth 2.0 표준을 따른다.
-         * */
-        if(headerStr == null || !headerStr.startsWith("Bearer ")) {
-            handleException(response, new Exception("ACCESS TOKEN  NOT FOUND"));
-            return;
-        }
-
-        String accessToken = headerStr.substring(7);
-
-        try {
-            Map<String, Object> tokenMap = jwtUtil.validateToken(accessToken);
-
-            log.info("tokenMap : " + tokenMap);
-
-            filterChain.doFilter(request, response);
-        } catch (Exception e) {
-            handleException(response, e);
-        }
     }
 
     private void handleException(HttpServletResponse response, Exception e) throws IOException {
