@@ -1,5 +1,6 @@
 package com.example.tokenTest.member.dto;
 
+import com.example.tokenTest.member.entity.MemberEntity;
 import lombok.*;
 
 @Data
@@ -9,6 +10,7 @@ import lombok.*;
 @ToString
 public class MemberDTO {
 
+    private Long mno;
     private String socialId;
     private String provider;
     private String email;
@@ -19,5 +21,14 @@ public class MemberDTO {
 
     public void updateNickname(String nickname) {
         this.nickname = nickname;
+    }
+
+    public MemberDTO(MemberEntity memberEntity) {
+        this.mno = memberEntity.getMno();
+        this.socialId = memberEntity.getSocialId();
+        this.provider = memberEntity.getProvider();
+        this.email = memberEntity.getEmail();
+        this.nickname = memberEntity.getNickname();
+        this.role = memberEntity.getRole();
     }
 }

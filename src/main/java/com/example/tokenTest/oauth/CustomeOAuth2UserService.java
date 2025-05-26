@@ -1,6 +1,8 @@
 package com.example.tokenTest.oauth;
 
 import com.example.tokenTest.member.dto.MemberDTO;
+import com.example.tokenTest.member.entity.MemberEntity;
+import com.example.tokenTest.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -20,7 +22,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class CustomeOAuth2UserService extends DefaultOAuth2UserService {
 
-   // private final UserRepository userRepository; // 사용자 정보를 DB에 저장하기 위한 Repository
+   private final MemberRepository memberRepository; // 사용자 정보를 DB에 저장하기 위한 Repository
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
@@ -33,8 +35,6 @@ public class CustomeOAuth2UserService extends DefaultOAuth2UserService {
 
         // OAuth2UserInfo 추상화 (카카오, 구글 등 Provider별로 다를 수 있는 사용자 정보를 통일된 형태로 가져옴)
         OAuth2UserInfo oauth2UserInfo = null;
-
-        log.info("SNS 로그인 시도 : " + registrationId);
 
         if ("kakao".equals(registrationId)) {
             oauth2UserInfo = new KakaoOAuth2UserInfo(attributes);
@@ -49,24 +49,28 @@ public class CustomeOAuth2UserService extends DefaultOAuth2UserService {
         String email = oauth2UserInfo.getEmail();
         String nickname = oauth2UserInfo.getNickname();
 
-       /* Optional<MemberDTO> userOptional = userRepository.findBySocialIdAndProvider(socialId, registrationId);
-        MemberDTO memberDTO;
+        Optional<MemberEntity> memberOptional = memberRepository.findBySocialIdAndProvider(socialId);
 
-        if (userOptional.isEmpty()) {
+        MemberEntity memberEntity;
+
+        if (memberOptional.isEmpty()) {
             // 첫 로그인: 회원가입 처리
-            memberDTO = MemberDTO.builder()
+
+            memberEntity = MemberEntity.builder()
                     .socialId(socialId)
                     .provider(registrationId)
                     .email(email)
                     .nickname(nickname)
                     .role("ROLE_USER") // 기본 역할 부여
                     .build();
-            userRepository.save(memberDTO);
+
+            memberRepository.save(memberEntity);
         } else {
             // 이미 가입된 회원: 정보 업데이트 (필요시)
-            memberDTO = userOptional.get();
-            memberDTO.updateNickname(nickname); // 예시: 닉네임 변경 시 업데이트
-            userRepository.save(memberDTO);
+            memberEntity = memberOptional.get();
+
+            memberEntity.updateNickname(nickname); // 예시: 닉네임 변경 시 업데이트
+            memberRepository.save(memberEntity);
         }
 
         // 스프링 시큐리티 Context에 저장될 OAuth2User 객체 반환
@@ -76,8 +80,6 @@ public class CustomeOAuth2UserService extends DefaultOAuth2UserService {
                 Collections.singletonList(() -> "ROLE_USER"), // 권한 설정 (여기서는 간단히 ROLE_USER)
                 attributes, // 원본 OAuth2 attributes
                 userNameAttributeName // 사용자 이름을 식별할 속성 (id)
-        );*/
-
-        return null;
+        );
     }
 }

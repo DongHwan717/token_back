@@ -43,6 +43,11 @@ dependencies {
 	// 스프링 시큐리티 (OAuth 2.0 클라이언트 포함)
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+
+	// MariaDB JDBC 드라이버
+	runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
+	// Spring Data JPA 의존성
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 }
 
 tasks.named('test') {
