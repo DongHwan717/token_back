@@ -27,9 +27,9 @@ public class TokenController {
         log.info("make token............");
         log.info("member Info : " + memberDTO);
 
-        String mid = memberDTO.getMid();
+        String mid = memberDTO.getId().toString();
 
-        Map<String, Object> dataMap = Map.of("mid", memberDTO.getMid(), "mpw", memberDTO.getMpw(), "role", "ROLE_ADMIN");
+        Map<String, Object> dataMap = Map.of("mid", memberDTO.getId(), "role", "ROLE_ADMIN");
 
         String accessToken = jwtUtil.createToken(dataMap, 10);
         String refreshToekn = jwtUtil.createToken(Map.of("mid", mid), 60);

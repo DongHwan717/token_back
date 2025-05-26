@@ -95,3 +95,75 @@
         handleException(response, e);
     }
 ```
+# SNS 로그인
+## 공통
+### CustomeSecurityConfig
+``` Java
+  @Bean
+  public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
+    httpSecurity
+      .oauth2Login(oauth2 -> {
+          oauth2
+              // 커스텀 로그인 페이지가 있다면 지정 (없으면 기본 로그인 페이지 사용), SPA에서는 이 페이지가 백엔드에 있을 필요는 없습니다.
+              //.loginPage("/login")
+              // 인가 요청을 보낼 기본 URL, (프론트엔드에서 이 URL로 리다이렉트)
+              .authorizationEndpoint(auth -> auth.baseUri("/oauth2/authorization"))
+              // OAuth2 Provider로부터 콜백을 받는 URL
+              .redirectionEndpoint(redirection -> redirection.baseUri("/login/oauth2/code/*"))
+              .userInfoEndpoint(userInfo -> userInfo
+                      .userService(customeOAuth2UserService) // CustomOAuth2UserService 등록
+              )
+              .successHandler(oAuth2AuthenticationSuccessHandler) // JWT 발행 및 리다이렉트를 처리할 커스텀 핸들러 등록
+              .failureUrl("/login-failure"); // 로그인 실패 시 리다이렉트될 URL
+      })
+  }
+```
+### CustomeOAuth2UserService.java
+``` Java
+@Service
+@Log4j2
+@RequiredArgsConstructor
+public class CustomeOAuth2UserService extends DefaultOAuth2UserService {
+  @Override
+    public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
+      OAuth2User oAuth2User = super.loadUser(userRequest);
+      
+      ...
+      
+      if ("kakao".equals(registrationId)) {
+          oauth2UserInfo = new KakaoOAuth2UserInfo(attributes);
+      } else if ("google".equals(registrationId)) {
+          // oauth2UserInfo = new GoogleOAuth2UserInfo(attributes); // 구글도 있다면 구현
+      } else {
+          throw new OAuth2AuthenticationException("Unsupported provider: " + registrationId);
+      }
+      
+      return null;
+    }
+}
+```
+
+## 카카오
+### KakaoOAuth2UserInfo.java
+``` Java
+public class KakaoOAuth2UserInfo implements OAuth2UserInfo {
+
+    private Map<String, Object> attributes;
+
+    public KakaoOAuth2UserInfo(Map<String, Object> attributes) {
+        this.attributes = attributes;
+    }
+
+    @Override
+    public Map<String, Object> getAttributes() {
+        return attributes;
+    }
+
+    @Override
+    public String getId() {
+        return getAttributes().get("id").toString();
+    }
+
+    ...
+}
+```
